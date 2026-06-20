@@ -1,4 +1,4 @@
-﻿# Good-Badminton: AI 羽毛球比赛分析助手 🏸
+﻿# Good-Badminton: AI 羽毛球鹰眼系统 🏸
 
 <div align="center">
 
@@ -12,8 +12,14 @@
 
 </div>
 
-## 🆕 更新日志
+## 🎬 效果预览
 
+![Good-Badminton 分析结果预览](assets/demo.gif)
+
+视频效果在 `assets/demo.mp4`。
+
+## 🆕 更新日志
+- **2026-06-20**：正式开源。
 - **2026-06-17**：整理项目介绍文档。
 - **当前版本**：支持球员姿态检测、羽毛球检测、球场坐标映射、轨迹统计、热力图/散点图和带标注视频输出。
 - **实验功能**：击球点分析和技术动作统计仍在迭代中，适合研究和二次开发使用。
@@ -28,13 +34,14 @@
 - [x] 中文 / 英文可视化文字
 - [x] 热力图、散点图和检测数据导出
 - [ ] 更稳定的击球点识别
+- [ ] 更精确的羽毛球检测模型
 - [ ] 更完整的技术动作统计
 - [ ] 自动球场关键点检测
 - [ ] 批量视频分析工作流
 
 ---
 
-## ✨ 功能特点
+## ✨ 功能
 
 - **球员姿态检测** - 支持 RTMPose、RTMO 和 Ultralytics YOLO Pose，识别人体关键点和骨架。
 - **羽毛球检测** - 使用 YOLO 模型检测羽毛球位置，并在输出视频中绘制轨迹。
@@ -53,11 +60,11 @@
 - FFmpeg，并已加入系统 `PATH`
 - OpenCV / PyTorch / Ultralytics / RTMLib / ONNX Runtime
 - 推荐 NVIDIA GPU；CPU 可以运行，但视频分析速度会明显变慢
-- 羽毛球 YOLO 检测权重 `weights/yolo11s-ball.pt`，计划随项目 Release 一起开源发布
+- 羽毛球 YOLO 检测权重 `weights/yolo11s-ball.pt`，请从项目 GitHub Release 下载
 
 ## 🚀 安装指南
 
-默认依赖使用 CPU 版 PyTorch 和 ONNX Runtime，兼容性最好，建议先用 CPU 环境跑通完整流程。
+默认依赖使用 CPU 版 PyTorch 和 ONNX Runtime。
 
 ### Windows
 
@@ -119,40 +126,50 @@ pip install --force-reinstall -r requirements.txt
 
 ## 📦 模型准备
 
-羽毛球检测默认使用本项目计划开源发布的 YOLO 权重。下载或训练得到权重后，请放到：
+羽毛球检测默认使用本项目发布的 YOLO 权重。请从 GitHub Release 下载 `yolo11s-ball.pt`：
+
+```text
+https://github.com/yo-WASSUP/Good-Badminton/releases
+```
+
+下载后放到：
 
 ```text
 weights/yolo11s-ball.pt
 ```
 
-RTMPose 可以使用本地 ONNX 模型文件：
+RTMPose / RTMO 可以使用本地 ONNX 模型文件：
 
 ```text
 weights/yolox_nano_8xb8-300e_humanart-40f6f0d0.onnx
 weights/rtmpose-s_simcc-body7_pt-body7_420e-256x192-acd4a1ef_20230504.onnx
+weights/rtmo-s_8xb32-600e_body7-640x640-dac2bf74_20231211.onnx
 ```
 
-如果你从 Release 下载权重，保持文件名为 `yolo11s-ball.pt` 即可直接运行；也可以通过 `--ball-model` 指向其他自训练权重。`weights/` 目录本身可放置本地模型文件，较大的权重文件建议通过 GitHub Release 发布。`rtmlib` 的 RTMPose 文件如果本地不存在，可能会尝试在线下载。
+本地 RTMPose / RTMO 文件不存在时，`rtmlib` 可能会尝试在线下载到用户缓存目录。
 
 ## 📝 使用指南
 
 ### 基础运行
 
 ```bash
-python main.py --video-path videos/lindan2008-round17.mp4
+python main.py --video-path videos/demo.mp4
 ```
 
 ### 第一次运行流程
 
-1. 准备输入视频和羽毛球检测权重。默认权重路径是 `weights/yolo11s-ball.pt`，项目计划在 Release 中开源发布该权重。
+1. 准备输入视频和羽毛球检测权重。
 2. 运行基础命令：
 
 ```bash
-python main.py --video-path videos/lindan2008-round17.mp4
+python main.py --video-path videos/demo.mp4
 ```
 
 3. 如果没有传 `--template-path`，程序会弹出文件选择框，让你选择一张球场模板图。模板图通常选视频里视角稳定、球场线清楚的一帧。
 4. 程序会打开球场标注窗口。按图片顶部提示，依次点击球场四个角点：左上、右上、右下、左下。
+
+![球场标注示例](assets/label_court_example.png)
+
 5. 点完四个点后，窗口会显示绿色球场框和蓝色姿态检测 ROI 框。ROI 由程序根据球场自动生成。
 6. 标注结果会保存到 `results/<视频文件名>/court_annotations.txt`。同一个输出目录下再次运行会复用这个文件，不会重复要求标注。
 7. 分析结束后，查看 `results/<视频文件名>/detect_<视频文件名>.mp4`、`detections.jsonl` 和 `position_visualizations/`。
@@ -182,13 +199,13 @@ python main.py --video-path videos/lindan2008-round17.mp4
 
 ```bash
 # 默认：两阶段 RTMPose balanced
-python main.py --video-path path/to/video.mp4 --pose-family rtmpose --pose-mode balanced
+python main.py --video-path videos/demo.mp4 --pose-family rtmpose --pose-mode balanced
 
 # 更轻量的一阶段 RTMO
-python main.py --video-path path/to/video.mp4 --pose-family rtmo --pose-mode lightweight
+python main.py --video-path videos/demo.mp4 --pose-family rtmo --pose-mode lightweight
 
 # 使用 Ultralytics YOLO Pose
-python main.py --video-path path/to/video.mp4 --pose-family yolo-pose --yolo-pose-model yolo11n-pose.pt
+python main.py --video-path videos/demo.mp4 --pose-family yolo-pose --yolo-pose-model yolo11n-pose.pt
 ```
 
 RTMPose 模型档位：
@@ -204,7 +221,7 @@ RTMPose 模型档位：
 --output-dir                 输出目录，默认 results/<视频文件名>
 --ball-model                 YOLO 羽毛球检测模型路径，默认 weights/yolo11s-ball.pt
 --pose-family                姿态模型族：rtmpose、rtmo 或 yolo-pose
---pose-mode                  RTMPose 档位：lightweight、balanced、performance
+--pose-mode                  RTMPose / RTMO 档位：lightweight、balanced、performance
 --yolo-pose-model            YOLO pose 模型路径或模型名，默认 yolo11n-pose.pt
 --template-path              球场模板图路径；不传时会弹出文件选择框
 --pose-roi true|false                是否显示姿态检测 ROI 框，默认 true
@@ -232,12 +249,17 @@ RTMPose 模型档位：
 - `position_visualizations/heatmaps/`：球员位置热力图。
 - `position_visualizations/scatter_plots/`：球员位置散点图。
 
+### 位置可视化示例
+
+| 热力图 | 散点图 |
+| --- | --- |
+| ![球员位置热力图示例](assets/match_heatmap.png) | ![球员位置散点图示例](assets/match_scatter.png) |
+
 ## 🧩 项目结构
 
 ```text
 main.py              # 命令行入口和参数解析，保持 python main.py ... 的运行方式
 badminton_analysis/
-├── cli.py           # 兼容转发入口
 ├── system.py        # 视频分析主流程 BadmintonAnalysisSystem
 ├── court/           # 球场标注与坐标映射
 ├── data/            # JSON / JSONL 输出
@@ -247,14 +269,10 @@ badminton_analysis/
 └── visualization/   # 视频叠加层、统计图和位置图
 ```
 
-## 📚 相关文档
-
-- [球员位置可视化说明](docs/player-position-visualization.md)
-
 ## 🙏 致谢
 
-感谢 TrackNetV2 羽毛球数据集。
+感谢 TrackNetV2 羽毛球数据集。 感谢RTMPose的人体姿态检测算法。感谢Ultralytics。
 
 ## 📄 许可证
 
-本项目代码使用 Apache License 2.0，详见 [LICENSE](LICENSE)。`weights/yolo11s-ball.pt` 羽毛球检测权重计划随项目开源发布；权重文件的许可证和使用限制请以发布时的 Release 说明为准。
+本项目代码和 `weights/yolo11s-ball.pt` 使用 Apache License 2.0。随 Release 提供的 RTMPose / RTMO / YOLOX ONNX 权重来自 OpenMMLab / RTMPose 生态，按其上游 Apache License 2.0 授权使用，并保留原始归属。

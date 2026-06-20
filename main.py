@@ -11,7 +11,7 @@ def main():
     parser.add_argument('--output-dir', default=None, type=str, help='输出目录，默认 results/<视频文件名>')
     parser.add_argument('--ball-model', default='weights/yolo11s-ball.pt', type=str, help='YOLO 羽毛球检测模型路径')
     parser.add_argument('--pose-family', default='rtmpose', choices=['rtmpose', 'rtmo', 'yolo-pose'], help='姿态模型族')
-    parser.add_argument('--pose-mode', default='balanced', choices=['lightweight', 'balanced', 'performance'], help='RTMPose 模型档位')
+    parser.add_argument('--pose-mode', default='balanced', choices=['lightweight', 'balanced', 'performance'], help='RTMPose / RTMO 模型档位')
     parser.add_argument('--yolo-pose-model', default='yolo11n-pose.pt', type=str, help='YOLO pose 模型路径或模型名')
     parser.add_argument('--template-path', default=None, type=str, help='球场模板图像路径；不提供时会弹出文件选择框')
     parser.add_argument('--pose-roi', choices=['true', 'false'], default='true', help='是否显示姿态检测 ROI 框，默认 true')

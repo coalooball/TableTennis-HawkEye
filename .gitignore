@@ -9,17 +9,10 @@ __pycache__/
 .venv/
 venv/
 env/
+.agents/
 
 # Local inputs and generated outputs
-videos/
 results/
-outputs/
-detect_images/
-*.mp4
-*.avi
-*.mov
-*.mkv
-*.csv
 *.log
 
 # Model weights are intentionally not published

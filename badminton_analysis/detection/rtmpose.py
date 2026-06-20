@@ -2,7 +2,7 @@ import os
 import cv2
 import sys
 import numpy as np
-from rtmlib import Body, draw_skeleton
+from rtmlib import Body, RTMO, draw_skeleton
 
 class RTMPoseProcessor:
     """RTMPose pose detection processor"""
@@ -49,17 +49,41 @@ class RTMPoseProcessor:
         
         return models_dir
     
+    def get_rtmo_model_path(self, mode):
+        """Return the local RTMO ONNX path for the selected mode."""
+        filenames = {
+            'lightweight': 'rtmo-s_8xb32-600e_body7-640x640-dac2bf74_20231211.onnx',
+            'balanced': 'rtmo-m_16xb16-600e_body7-640x640-39e78cc4_20231211.onnx',
+            'performance': 'rtmo-l_16xb16-600e_body7-640x640-b37118ce_20231211.onnx',
+        }
+        return os.path.join(self.get_models_dir(), filenames.get(mode, filenames['balanced']))
+
+    def create_rtmo_model(self, mode):
+        """Create RTMO, preferring a local ONNX file over rtmlib's cache downloader."""
+        pose_model = self.get_rtmo_model_path(mode)
+        if os.path.exists(pose_model):
+            print(f"Using local RTMO model file ({mode} mode): {pose_model}")
+            return RTMO(
+                pose_model,
+                model_input_size=(640, 640),
+                backend=self.backend,
+                device=self.device
+            )
+
+        print("Local RTMO model file not found, using online download")
+        return Body(
+            pose='rtmo',
+            mode=mode,
+            backend=self.backend,
+            device=self.device
+        )
+
     def init_rtmpose(self, mode='balanced'):
         """Initialize RTMPose model"""
         try:
             print(f"Initializing pose model (family: {self.pose_family}, mode: {mode}, backend: {self.backend}, device: {self.device})")
             if self.pose_family == 'rtmo':
-                self.wholebody = Body(
-                    pose='rtmo',
-                    mode=mode,
-                    backend=self.backend,
-                    device=self.device
-                )
+                self.wholebody = self.create_rtmo_model(mode)
                 print("RTMO model initialization successful")
                 return
             
@@ -116,12 +140,7 @@ class RTMPoseProcessor:
                     # Retry initialization on CPU
                     print(f"Initializing pose model (family: {self.pose_family}, mode: {mode}, backend: {self.backend}, device: {self.device})")
                     if self.pose_family == 'rtmo':
-                        self.wholebody = Body(
-                            pose='rtmo',
-                            mode=mode,
-                            backend=self.backend,
-                            device=self.device
-                        )
+                        self.wholebody = self.create_rtmo_model(mode)
                         print("RTMO CPU model initialization successful")
                         return
                     models_dir = self.get_models_dir()

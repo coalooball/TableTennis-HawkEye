@@ -97,8 +97,7 @@ class BadmintonAnalysisSystem:
                 "Download or train a YOLO shuttlecock model and place it at "
                 "weights/yolo11s-ball.pt, or pass its path with --ball-model."
             )
-
-        # 鍔犺浇妯″瀷
+        
         if self.pose_family == 'yolo-pose':
             self.rtmpose_processor = YOLOPoseProcessor(model_path=self.yolo_pose_model)
         else:
@@ -122,8 +121,8 @@ class BadmintonAnalysisSystem:
         self.detection_writer = None
         
 
-        self.player_1_hand = "right"  # 涓婂満鍖洪€夋墜鎯敤鎵?
-        self.player_2_hand = "right"  # 涓嬪満鍖洪€夋墜鎯敤鎵?
+        self.player_1_hand = "right"  
+        self.player_2_hand = "right"  
         self.start_time = None
         self.end_time = None
         
@@ -135,7 +134,6 @@ class BadmintonAnalysisSystem:
             show_performance_stats=self.show_performance_stats
         )
         
-
         self.player_pose_visualizer = PlayerPoseVisualizer(
             rtmpose_processor=self.rtmpose_processor,
             show_skeletons=self.show_skeletons,
@@ -153,8 +151,8 @@ class BadmintonAnalysisSystem:
         self.is_court_view_count = 0
         self.consecutive_non_court_frames = 0
         self.rally_active = False
-        self.rally_count = 0  # 鎬诲洖鍚堣鏁?
-        self.fps = 30  # 榛樿甯х巼锛屽湪process_video涓細鏇存柊
+        self.rally_count = 0  
+        self.fps = 30  
         self.court_view_frames_threshold = 5
         self.non_court_frames_threshold = 5
 
@@ -218,7 +216,6 @@ class BadmintonAnalysisSystem:
             frame_count += 1
             frame, detect_frame_count = self._process_frame(frame, template_gray, corners, roi_corners, frame_count, out, detect_frame_count)
 
-        # 鍦╛cleanup涔嬪墠娣诲姞缁撴潫鏃堕棿
         self.end_time = time.time()
         processing_time = self.end_time - self.start_time
         
@@ -227,7 +224,6 @@ class BadmintonAnalysisSystem:
         print(f"处理耗时: {processing_time:.2f} 秒")
         print(f"处理速度比: {processing_time/video_duration:.2f}x")
         
-        # 娓呯悊璧勬簮
         self._cleanup(cap)
 
     def _write_metadata(self, fps, total_frames, video_duration, template_path, corners, roi_corners, mid_height):
@@ -264,7 +260,7 @@ class BadmintonAnalysisSystem:
         write_json(self.metadata_path, metadata)
 
     def _process_frame(self, frame, template_gray, corners, roi_corners, frame_count, out, detect_frame_count):
-        """澶勭悊鍗曞抚鍥惧儚"""
+
         gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         
         # frame = self.draw_court_roi(frame, corners, roi_corners)
@@ -289,7 +285,7 @@ class BadmintonAnalysisSystem:
 
         if self.consecutive_non_court_frames >= self.non_court_frames_threshold and self.rally_active:
             self.rally_active = False
-            # 鍥炲悎缁撴潫鏃舵竻绌虹窘姣涚悆杞ㄨ抗
+
             self.shuttlecock_tracker.clear_trajectory()
 
 
@@ -298,7 +294,6 @@ class BadmintonAnalysisSystem:
 
         detect_frame_count += 1
 
-        # 鑾峰彇ROI鍖哄煙
         x1, y1 = roi_corners[0]
         x2, y2 = roi_corners[1]
         roi = frame[y1:y2, x1:x2]
@@ -308,8 +303,8 @@ class BadmintonAnalysisSystem:
 
 
         centroids, point_left_hands, point_right_hands = self.player_pose_visualizer.detect_players(roi, x1, y1)
-        ball_position = self.shuttlecock_tracker.detect_ball(frame)
-        self.shuttlecock_tracker.update_trajectory(ball_position, roi_corners)
+        detected_ball_position = self.shuttlecock_tracker.detect_ball(frame, roi_corners=roi_corners)
+        ball_position = self.shuttlecock_tracker.update_trajectory(detected_ball_position, roi_corners)
         
 
         self.shuttlecock_tracker.handle_visualization(frame)
@@ -435,7 +430,6 @@ class BadmintonAnalysisSystem:
         if not corners or not roi_corners or len(corners) != 4 or len(roi_corners) != 2:
             raise RuntimeError("Court annotation is incomplete: click 4 court corners in order. ROI is generated automatically.")
 
-        # 淇濆瓨鏍囨敞淇℃伅
         with open(os.path.join(self.save_dir, 'court_annotations.txt'), 'w') as f:
             f.write(f"corners={corners}\n")
             f.write(f"roi_corners={roi_corners}\n")
