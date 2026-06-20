@@ -8,7 +8,7 @@
 
 **基于计算机视觉的羽毛球比赛视频分析工具**
 
-[中文](README.md)
+[中文](README.md) | [English](README_EN.md)
 
 </div>
 
