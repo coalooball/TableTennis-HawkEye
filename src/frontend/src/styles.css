@@ -113,6 +113,10 @@ body {
   width: 100%;
 }
 
+.controlStack .ant-btn {
+  justify-content: flex-start;
+}
+
 .modelPathInput {
   width: 100%;
 }

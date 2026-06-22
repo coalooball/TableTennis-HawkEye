@@ -1,5 +1,5 @@
-import { Button, Divider, Flex, Slider, Space, Typography } from "antd";
-import { Play, Save, Square, Trash2 } from "lucide-react";
+import { Button, Divider, Dropdown, Flex, Slider, Space, Typography } from "antd";
+import { Play, Save, ScanSearch, Square, Target, Trash2 } from "lucide-react";
 
 import type { AppState, LanguageLabels } from "./types";
 
@@ -30,6 +30,8 @@ type SidebarProps = {
   labels: LanguageLabels;
   onStart: () => void;
   onStop: () => void;
+  onManualTableCalibration: () => void;
+  onAutoTableCalibration: () => void;
   onSave: () => void;
   onClear: () => void;
   onConfidenceChange: (value: number) => void;
@@ -41,6 +43,8 @@ export function Sidebar({
   labels,
   onStart,
   onStop,
+  onManualTableCalibration,
+  onAutoTableCalibration,
   onSave,
   onClear,
   onConfidenceChange,
@@ -64,6 +68,19 @@ export function Sidebar({
         >
           {playing ? labels.stop : labels.start}
         </Button>
+        <Dropdown
+          menu={{
+            items: [
+              { key: "manual", icon: <Target size={16} />, label: labels.tableManualCalibration, onClick: onManualTableCalibration },
+              { key: "auto", icon: <ScanSearch size={16} />, label: labels.tableAutoCalibration, onClick: onAutoTableCalibration },
+            ],
+          }}
+          trigger={["click"]}
+        >
+          <Button block icon={<Target size={16} />} disabled={!hasFrame}>
+            {labels.calibrateTable}
+          </Button>
+        </Dropdown>
         <Button block icon={<Save size={16} />} disabled={!hasFrame} onClick={onSave}>
           {labels.saveFrame}
         </Button>

@@ -11,6 +11,8 @@ type MainWorkspaceProps = {
   isCalibratingTable: boolean;
   onStart: () => void;
   onStop: () => void;
+  onManualTableCalibration: () => void;
+  onAutoTableCalibration: () => void;
   onSave: () => void;
   onClear: () => void;
   onConfidenceChange: (value: number) => void;
@@ -25,6 +27,8 @@ export function MainWorkspace({
   isCalibratingTable,
   onStart,
   onStop,
+  onManualTableCalibration,
+  onAutoTableCalibration,
   onSave,
   onClear,
   onConfidenceChange,
@@ -38,6 +42,8 @@ export function MainWorkspace({
         labels={labels}
         onStart={onStart}
         onStop={onStop}
+        onManualTableCalibration={onManualTableCalibration}
+        onAutoTableCalibration={onAutoTableCalibration}
         onSave={onSave}
         onClear={onClear}
         onConfidenceChange={onConfidenceChange}

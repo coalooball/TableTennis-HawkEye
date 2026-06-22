@@ -1,5 +1,5 @@
 import { Button, Dropdown, Layout, Space } from "antd";
-import { Camera, FileVideo, FolderOpen, Languages, Moon, ScanSearch, Settings, Sun, Target } from "lucide-react";
+import { Camera, FileVideo, FolderOpen, Languages, Moon, Settings, Sun } from "lucide-react";
 
 import type { LanguageLabels } from "./types";
 
@@ -8,8 +8,6 @@ type NavigationBarProps = {
   labels: LanguageLabels;
   onOpenVideo: () => void;
   onOpenCamera: () => void;
-  onManualTableCalibration: () => void;
-  onAutoTableCalibration: () => void;
   onOpenSettings: () => void;
   onToggleTheme: () => void;
   onToggleLanguage: () => void;
@@ -20,8 +18,6 @@ export function NavigationBar({
   labels,
   onOpenVideo,
   onOpenCamera,
-  onManualTableCalibration,
-  onAutoTableCalibration,
   onOpenSettings,
   onToggleTheme,
   onToggleLanguage,
@@ -41,28 +37,17 @@ export function NavigationBar({
           <Button aria-label={labels.openSource} icon={<FolderOpen size={17} />} />
         </Dropdown>
         <Button aria-label={labels.settings} icon={<Settings size={17} />} onClick={onOpenSettings} />
-        <Dropdown
-          menu={{
-            items: [
-              { key: "manual", icon: <Target size={16} />, label: labels.tableManualCalibration, onClick: onManualTableCalibration },
-              { key: "auto", icon: <ScanSearch size={16} />, label: labels.tableAutoCalibration, onClick: onAutoTableCalibration },
-            ],
-          }}
-          trigger={["click"]}
-        >
-          <Button icon={<Target size={17} />}>{labels.calibrateTable}</Button>
-        </Dropdown>
       </Space>
       <Space size={8}>
+        <Button aria-label={labels.switchLanguage} icon={<Languages size={17} />} onClick={onToggleLanguage}>
+          {labels.language}
+        </Button>
         <Button
           aria-label={isDarkMode ? labels.switchToLight : labels.switchToDark}
           icon={isDarkMode ? <Sun size={17} /> : <Moon size={17} />}
           onClick={onToggleTheme}
         >
           {isDarkMode ? labels.light : labels.dark}
-        </Button>
-        <Button aria-label={labels.switchLanguage} icon={<Languages size={17} />} onClick={onToggleLanguage}>
-          {labels.language}
         </Button>
       </Space>
     </Layout.Header>

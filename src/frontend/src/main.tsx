@@ -246,8 +246,6 @@ function DesktopApp() {
           labels={labels}
           onOpenVideo={openVideo}
           onOpenCamera={openCamera}
-          onManualTableCalibration={calibrateManually}
-          onAutoTableCalibration={calibrateAutomatically}
           onOpenSettings={() => setSettingsOpen(true)}
           onToggleTheme={() => setIsDarkMode((value) => !value)}
           onToggleLanguage={() => setLanguage((value) => (value === "en" ? "zh" : "en"))}
@@ -260,6 +258,8 @@ function DesktopApp() {
           isCalibratingTable={isCalibratingTable}
           onStart={start}
           onStop={stop}
+          onManualTableCalibration={calibrateManually}
+          onAutoTableCalibration={calibrateAutomatically}
           onSave={save}
           onClear={clear}
           onConfidenceChange={setConfidence}
