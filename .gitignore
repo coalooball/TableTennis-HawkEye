@@ -6,5 +6,7 @@ __pycache__/
 .DS_Store
 outputs/
 videos/
+src/frontend/node_modules/
+src/frontend/dist/
 /models/**
 !/models/.gitkeep

@@ -54,15 +54,25 @@ class BallSpeedEstimator:
         else:
             text = f"Ball speed: {self.last_speed_m_s:.2f} m/s  {self.last_speed_m_s * 3.6:.1f} km/h"
 
-        cv2.rectangle(frame, (12, 120), (430, 164), (0, 0, 0), thickness=-1)
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 0.72
+        thickness = 2
+        (text_width, text_height), baseline = cv2.getTextSize(text, font, font_scale, thickness)
+        padding = 8
+        left = 0
+        top = 0
+        right = min(frame.shape[1] - 1, text_width + padding * 2)
+        bottom = min(frame.shape[0] - 1, text_height + baseline + padding * 2)
+
+        cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 0), thickness=-1)
         cv2.putText(
             frame,
             text,
-            (24, 150),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.72,
+            (left + padding, top + padding + text_height),
+            font,
+            font_scale,
             (80, 220, 255),
-            2,
+            thickness,
             cv2.LINE_AA,
         )
 
