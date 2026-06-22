@@ -1,5 +1,5 @@
 import { Button, Divider, Flex, Slider, Space, Typography } from "antd";
-import { Play, Save, Square, Target, Trash2 } from "lucide-react";
+import { Play, Save, Square, Trash2 } from "lucide-react";
 
 import type { AppState, LanguageLabels } from "./types";
 
@@ -31,7 +31,6 @@ type SidebarProps = {
   onStart: () => void;
   onStop: () => void;
   onSave: () => void;
-  onCalibrate: () => void;
   onClear: () => void;
   onConfidenceChange: (value: number) => void;
 };
@@ -43,7 +42,6 @@ export function Sidebar({
   onStart,
   onStop,
   onSave,
-  onCalibrate,
   onClear,
   onConfidenceChange,
 }: SidebarProps) {
@@ -68,9 +66,6 @@ export function Sidebar({
         </Button>
         <Button block icon={<Save size={16} />} disabled={!hasFrame} onClick={onSave}>
           {labels.saveFrame}
-        </Button>
-        <Button block icon={<Target size={16} />} disabled={!hasFrame} onClick={onCalibrate}>
-          {labels.calibrateTable}
         </Button>
         <Button block icon={<Trash2 size={16} />} disabled={!hasFrame} onClick={onClear}>
           {labels.clearTrajectory}

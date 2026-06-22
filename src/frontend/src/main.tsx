@@ -33,6 +33,7 @@ function DesktopApp() {
   const [language, setLanguage] = useState<Language>(defaultLanguage);
   const [modelPath, setModelPath] = useState("models/yolo26n-pose.pt");
   const [ballModelPath, setBallModelPath] = useState("models/yolo11s-ball.pt");
+  const [tableModelPath, setTableModelPath] = useState("models/table.pt");
   const [saveFrameDirectory, setSaveFrameDirectory] = useState("outputs");
   const timer = useRef<number | null>(null);
   const playingRef = useRef(false);
@@ -41,6 +42,7 @@ function DesktopApp() {
     setState(next);
     setModelPath(next.poseModelPath);
     setBallModelPath(next.ballModelPath);
+    setTableModelPath(next.tableModelPath);
   };
 
   const applyFrameResponse = (response: FrameResponse) => {
@@ -153,11 +155,36 @@ function DesktopApp() {
     message.success(next.status);
   };
 
-  const calibrate = async () => {
+  const canCalibrateTable = () => {
+    if (!state?.hasCapture || !state.hasFrame || !state.videoName) {
+      Modal.warning({ title: labels.calibrateTable, content: labels.tableNeedSource });
+      return false;
+    }
+    if (state.playing || playingRef.current) {
+      Modal.warning({ title: labels.calibrateTable, content: labels.tableNeedStopped });
+      return false;
+    }
+    return true;
+  };
+
+  const calibrateManually = async () => {
+    if (!canCalibrateTable()) {
+      return;
+    }
     const response = await api<FrameResponse>("/table/calibrate", { method: "POST" });
     applyFrameResponse(response);
     setIsCalibratingTable(true);
     message.info(labels.calibratingTable);
+  };
+
+  const calibrateAutomatically = async () => {
+    if (!canCalibrateTable()) {
+      return;
+    }
+    setIsCalibratingTable(false);
+    const response = await api<FrameResponse>("/table/auto-calibrate", { method: "POST" });
+    applyFrameResponse(response);
+    message.info(response.state.status);
   };
 
   const clear = async () => {
@@ -200,9 +227,13 @@ function DesktopApp() {
       method: "POST",
       body: JSON.stringify({ path: ballModelPath }),
     });
-    applyState(next);
+    const tableState = await api<AppState>("/settings/table-model", {
+      method: "POST",
+      body: JSON.stringify({ path: tableModelPath }),
+    });
+    applyState(tableState);
     setSettingsOpen(false);
-    message.success(`${poseState.status}; ${next.status}`);
+    message.success(`${poseState.status}; ${next.status}; ${tableState.status}`);
   };
 
   const labels = languageLabels[language];
@@ -215,6 +246,8 @@ function DesktopApp() {
           labels={labels}
           onOpenVideo={openVideo}
           onOpenCamera={openCamera}
+          onManualTableCalibration={calibrateManually}
+          onAutoTableCalibration={calibrateAutomatically}
           onOpenSettings={() => setSettingsOpen(true)}
           onToggleTheme={() => setIsDarkMode((value) => !value)}
           onToggleLanguage={() => setLanguage((value) => (value === "en" ? "zh" : "en"))}
@@ -228,7 +261,6 @@ function DesktopApp() {
           onStart={start}
           onStop={stop}
           onSave={save}
-          onCalibrate={calibrate}
           onClear={clear}
           onConfidenceChange={setConfidence}
           onFrameClick={addTablePoint}
@@ -247,6 +279,13 @@ function DesktopApp() {
               <Space.Compact className="modelPathInput">
                 <Input value={ballModelPath} onChange={(event) => setBallModelPath(event.target.value)} />
                 <Button onClick={() => pickModel(setBallModelPath)}>{labels.browse}</Button>
+              </Space.Compact>
+            </Flex>
+            <Flex vertical gap={8}>
+              <Typography.Text>{labels.tableModelPath}</Typography.Text>
+              <Space.Compact className="modelPathInput">
+                <Input value={tableModelPath} onChange={(event) => setTableModelPath(event.target.value)} />
+                <Button onClick={() => pickModel(setTableModelPath)}>{labels.browse}</Button>
               </Space.Compact>
             </Flex>
             <Flex vertical gap={8}>

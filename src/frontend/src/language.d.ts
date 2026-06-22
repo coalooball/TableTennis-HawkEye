@@ -25,6 +25,11 @@ export const languageLabels: {
     start: string;
     status: string;
     stop: string;
+    tableAutoCalibration: string;
+    tableManualCalibration: string;
+    tableModelPath: string;
+    tableNeedSource: string;
+    tableNeedStopped: string;
     switchLanguage: string;
     switchToDark: string;
     switchToLight: string;
@@ -64,6 +69,11 @@ export const languageLabels: {
     start: string;
     status: string;
     stop: string;
+    tableAutoCalibration: string;
+    tableManualCalibration: string;
+    tableModelPath: string;
+    tableNeedSource: string;
+    tableNeedStopped: string;
     switchLanguage: string;
     switchToDark: string;
     switchToLight: string;

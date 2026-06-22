@@ -96,6 +96,12 @@ def set_ball_model_path(request: ModelPathRequest) -> AppState:
         return backend.set_ball_model_path(request.path)
 
 
+@app.post("/settings/table-model", response_model=AppState, response_model_by_alias=True)
+def set_table_model_path(request: ModelPathRequest) -> AppState:
+    with backend.lock:
+        return backend.set_table_model_path(request.path)
+
+
 @app.post("/frame/save", response_model=AppState, response_model_by_alias=True)
 def save_current_frame(request: SaveFrameRequest) -> AppState:
     with backend.lock:
@@ -106,6 +112,12 @@ def save_current_frame(request: SaveFrameRequest) -> AppState:
 def calibrate_table() -> FrameResponse:
     with backend.lock:
         return backend.calibrate_table()
+
+
+@app.post("/table/auto-calibrate", response_model=FrameResponse, response_model_by_alias=True)
+def auto_calibrate_table() -> FrameResponse:
+    with backend.lock:
+        return backend.auto_calibrate_table()
 
 
 @app.post("/table/point", response_model=FrameResponse, response_model_by_alias=True)

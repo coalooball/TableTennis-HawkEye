@@ -18,6 +18,7 @@ export type AppState = {
   videoDurationSeconds: number | null;
   poseModelPath: string;
   ballModelPath: string;
+  tableModelPath: string;
   action: string;
   detail: string;
   status: string;

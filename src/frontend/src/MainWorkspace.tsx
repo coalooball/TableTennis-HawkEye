@@ -12,7 +12,6 @@ type MainWorkspaceProps = {
   onStart: () => void;
   onStop: () => void;
   onSave: () => void;
-  onCalibrate: () => void;
   onClear: () => void;
   onConfidenceChange: (value: number) => void;
   onFrameClick: (event: React.MouseEvent<HTMLImageElement>) => void;
@@ -27,7 +26,6 @@ export function MainWorkspace({
   onStart,
   onStop,
   onSave,
-  onCalibrate,
   onClear,
   onConfidenceChange,
   onFrameClick,
@@ -41,7 +39,6 @@ export function MainWorkspace({
         onStart={onStart}
         onStop={onStop}
         onSave={onSave}
-        onCalibrate={onCalibrate}
         onClear={onClear}
         onConfidenceChange={onConfidenceChange}
       />

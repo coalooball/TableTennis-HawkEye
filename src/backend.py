@@ -7,6 +7,7 @@ from pathlib import Path
 
 import cv2
 from pydantic import BaseModel, ConfigDict
+from ultralytics import YOLO
 
 
 def to_camel(value: str) -> str:
@@ -40,6 +41,7 @@ class AppState(ApiModel):
     video_duration_seconds: float | None
     pose_model_path: str
     ball_model_path: str
+    table_model_path: str
     action: str
     detail: str
     status: str
@@ -80,6 +82,7 @@ class TableTennisBackend:
     def __init__(self) -> None:
         self.engine: PoseActionEngine | None = None
         self.ball_detector: YoloBallDetector | None = None
+        self.table_detector: YOLO | None = None
         self.capture: cv2.VideoCapture | None = None
         self.raw_frame = None
         self.current_frame = None
@@ -96,6 +99,7 @@ class TableTennisBackend:
         self.confidence = 0.35
         self.model_path = DEFAULT_MODEL
         self.ball_model_path = DEFAULT_BALL_MODEL
+        self.table_model_path = Path("models/table.pt")
         self.action_text = "Action: -"
         self.detail_text = f"Model: {self.model_path}"
         self.status_text = "Select a video or camera"
@@ -122,6 +126,7 @@ class TableTennisBackend:
             video_duration_seconds=self.video_duration_seconds,
             pose_model_path=str(self.model_path),
             ball_model_path=str(self.ball_model_path),
+            table_model_path=str(self.table_model_path),
             action=self.action_text,
             detail=self.detail_text,
             status=self.status_text,
@@ -269,6 +274,19 @@ class TableTennisBackend:
         self.status_text = f"Ball model path set: {self.ball_model_path}"
         return self.state()
 
+    def set_table_model_path(self, path: str) -> AppState:
+        model_path = Path(path).expanduser()
+        if not model_path.exists():
+            self.status_text = f"Table model not found: {model_path}"
+            return self.state()
+        if model_path.suffix.lower() not in {".pt", ".onnx"}:
+            self.status_text = f"Unsupported table model type: {model_path.suffix}"
+            return self.state()
+        self.table_model_path = model_path
+        self.table_detector = None
+        self.status_text = f"Table model path set: {self.table_model_path}"
+        return self.state()
+
     def save_current_frame(self, path: str) -> AppState:
         if self.current_frame is None:
             self.status_text = "No frame to save"
@@ -285,6 +303,48 @@ class TableTennisBackend:
         self.status_text = self.table_calibrator.next_prompt()
         if self.raw_frame is not None:
             self.process_frame(self.raw_frame, run_pose=False, update_tracking=False)
+        return self.frame_response()
+
+    def auto_calibrate_table(self) -> FrameResponse:
+        self.table_calibrator.reset()
+        self.clear_tracking()
+        if self.raw_frame is None:
+            self.status_text = "No frame to calibrate"
+            return self.frame_response()
+        if not self.table_model_path.exists():
+            self.status_text = f"Table model not found: {self.table_model_path}"
+            self.process_frame(self.raw_frame, run_pose=False, update_tracking=False)
+            return self.frame_response()
+        try:
+            if self.table_detector is None:
+                self.table_detector = YOLO(str(self.table_model_path))
+            results = self.table_detector.predict(self.raw_frame, verbose=False)
+        except Exception as exc:
+            self.status_text = f"Table model error: {exc}"
+            self.process_frame(self.raw_frame, run_pose=False, update_tracking=False)
+            return self.frame_response()
+
+        best_box = None
+        best_confidence = -1.0
+        for result in results:
+            boxes = getattr(result, "boxes", None)
+            if boxes is None:
+                continue
+            for box in boxes:
+                confidence = float(box.conf[0]) if box.conf is not None else 0.0
+                if confidence > best_confidence:
+                    best_confidence = confidence
+                    best_box = box
+
+        if best_box is None:
+            self.status_text = "Table not detected"
+            self.process_frame(self.raw_frame, run_pose=False, update_tracking=False)
+            return self.frame_response()
+
+        x1, y1, x2, y2 = [int(round(value)) for value in best_box.xyxy[0].tolist()]
+        self.table_calibrator.points = [(x1, y1), (x2, y1), (x2, y2), (x1, y2)]
+        self.status_text = f"Table auto calibrated ({best_confidence:.2f})"
+        self.process_frame(self.raw_frame, run_pose=False, update_tracking=False)
         return self.frame_response()
 
     def add_table_point(self, x: int, y: int) -> FrameResponse:
