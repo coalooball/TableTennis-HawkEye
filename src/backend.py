@@ -238,7 +238,6 @@ class TableTennisBackend:
         self.confidence = max(0.1, min(0.9, confidence))
         if self.engine is not None:
             self.engine.conf = self.confidence
-        self.status_text = f"Confidence: {self.confidence:.2f}"
         return self.state()
 
     def set_model_path(self, path: str) -> AppState:
