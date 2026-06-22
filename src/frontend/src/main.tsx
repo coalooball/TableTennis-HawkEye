@@ -155,6 +155,15 @@ function DesktopApp() {
     message.success(next.status);
   };
 
+  const seekFrame = async (frameIndex: number) => {
+    setPlayback(false);
+    const response = await api<FrameResponse>("/frame/seek", {
+      method: "POST",
+      body: JSON.stringify({ frameIndex: frameIndex - 1 }),
+    });
+    applyFrameResponse(response);
+  };
+
   const canCalibrateTable = () => {
     if (!state?.hasCapture || !state.hasFrame || !state.videoName) {
       Modal.warning({ title: labels.calibrateTable, content: labels.tableNeedSource });
@@ -263,6 +272,7 @@ function DesktopApp() {
           onSave={save}
           onClear={clear}
           onConfidenceChange={setConfidence}
+          onSeekFrame={seekFrame}
           onFrameClick={addTablePoint}
         />
         <Modal title={labels.settings} open={settingsOpen} onCancel={() => setSettingsOpen(false)} onOk={saveSettings} okText={labels.save}>

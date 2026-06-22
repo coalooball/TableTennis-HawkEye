@@ -1,4 +1,5 @@
-import { Layout } from "antd";
+import { useEffect, useState } from "react";
+import { Layout, Slider, Typography } from "antd";
 
 import { Sidebar } from "./Sidebar";
 import type { AppState, LanguageLabels } from "./types";
@@ -16,6 +17,7 @@ type MainWorkspaceProps = {
   onSave: () => void;
   onClear: () => void;
   onConfidenceChange: (value: number) => void;
+  onSeekFrame: (frameIndex: number) => void;
   onFrameClick: (event: React.MouseEvent<HTMLImageElement>) => void;
 };
 
@@ -32,8 +34,18 @@ export function MainWorkspace({
   onSave,
   onClear,
   onConfidenceChange,
+  onSeekFrame,
   onFrameClick,
 }: MainWorkspaceProps) {
+  const hasVideoProgress = Boolean(state?.videoFrameCount && state.videoFrameCount > 0);
+  const totalFrames = state?.videoFrameCount ?? 0;
+  const currentFrame = Math.min(state?.frameIndex ?? 0, totalFrames);
+  const [sliderFrame, setSliderFrame] = useState(currentFrame);
+
+  useEffect(() => {
+    setSliderFrame(currentFrame);
+  }, [currentFrame]);
+
   return (
     <Layout.Content className="workspace">
       <Sidebar
@@ -48,8 +60,25 @@ export function MainWorkspace({
         onClear={onClear}
         onConfidenceChange={onConfidenceChange}
       />
-      <section className={`viewer ${isCalibratingTable ? "isCalibrating" : ""}`}>
-        {frame ? <img src={frame} alt="" onClick={isCalibratingTable ? onFrameClick : undefined} /> : <span>{labels.selectSource}</span>}
+      <section className="viewerPanel">
+        <div className={`viewer ${isCalibratingTable ? "isCalibrating" : ""}`}>
+          {frame ? <img src={frame} alt="" onClick={isCalibratingTable ? onFrameClick : undefined} /> : <span>{labels.selectSource}</span>}
+        </div>
+        {hasVideoProgress ? (
+          <div className="videoProgress">
+            <Slider
+              min={1}
+              max={totalFrames}
+              value={sliderFrame}
+              tooltip={{ formatter: null }}
+              onChange={setSliderFrame}
+              onChangeComplete={onSeekFrame}
+            />
+            <Typography.Text type="secondary">
+              {sliderFrame} / {totalFrames}
+            </Typography.Text>
+          </div>
+        ) : null}
       </section>
     </Layout.Content>
   );

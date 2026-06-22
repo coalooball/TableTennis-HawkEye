@@ -8,6 +8,13 @@
   box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+
 body {
   margin: 0;
   min-width: 920px;
@@ -15,7 +22,8 @@ body {
 }
 
 .shell {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .themeDark {
@@ -53,7 +61,16 @@ body {
   grid-template-columns: 280px minmax(0, 1fr);
   gap: 8px;
   padding: 8px;
-  min-height: calc(100vh - 51px);
+  height: calc(100vh - 51px);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.viewerPanel {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 8px;
+  min-height: 0;
 }
 
 .viewer {
@@ -77,7 +94,7 @@ body {
 .viewer img {
   display: block;
   max-width: 100%;
-  max-height: calc(100vh - 74px);
+  max-height: calc(100vh - 114px);
   object-fit: contain;
 }
 
@@ -85,10 +102,19 @@ body {
   cursor: crosshair;
 }
 
+.videoProgress {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
 .sidePanel {
   display: grid;
   align-content: start;
   gap: 12px;
+  min-height: 0;
+  overflow: hidden;
   padding: 12px;
 }
 

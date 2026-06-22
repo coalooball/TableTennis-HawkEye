@@ -3,10 +3,11 @@ from __future__ import annotations
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend import (
+from backend.backend import (
     AnalyzeResult,
     AppState,
     ConfidenceRequest,
+    FrameSeekRequest,
     FrameResponse,
     ModelPathRequest,
     SaveFrameRequest,
@@ -70,6 +71,12 @@ def stop() -> AppState:
 def next_frame() -> FrameResponse:
     with backend.lock:
         return backend.next_frame()
+
+
+@app.post("/frame/seek", response_model=FrameResponse, response_model_by_alias=True)
+def seek_frame(request: FrameSeekRequest) -> FrameResponse:
+    with backend.lock:
+        return backend.seek_frame(request.frame_index)
 
 
 @app.post("/frame/infer", response_model=FrameResponse, response_model_by_alias=True)

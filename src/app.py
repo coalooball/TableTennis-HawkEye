@@ -11,7 +11,7 @@ from api import app as fastapi_app
 
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
-TAURI_DIR = ROOT_DIR / "src" / "src-tauri"
+TAURI_DIR = ROOT_DIR / "src" / "backend"
 APP_ICON_PATH = ROOT_DIR / "src" / "assets" / "app.png"
 
 

@@ -63,6 +63,10 @@ class SaveFrameRequest(ApiModel):
     path: str = "outputs/frame.jpg"
 
 
+class FrameSeekRequest(ApiModel):
+    frame_index: int
+
+
 class TablePointRequest(ApiModel):
     x: int
     y: int
@@ -230,6 +234,26 @@ class TableTennisBackend:
             return self.frame_response()
         self.process_frame(frame, run_pose=run_pose, update_tracking=True)
         self.frame_index += 1
+        return self.frame_response()
+
+    def seek_frame(self, frame_index: int) -> FrameResponse:
+        if self.capture is None or not isinstance(self.current_source, str):
+            return self.frame_response()
+        target = max(0, int(frame_index))
+        if self.video_frame_count is not None:
+            target = min(target, max(0, self.video_frame_count - 1))
+
+        self.playing = False
+        self.capture.set(cv2.CAP_PROP_POS_FRAMES, target)
+        ok, frame = self.capture.read()
+        if not ok:
+            self.status_text = f"Unable to seek to frame {target}"
+            return self.frame_response()
+
+        self.frame_index = target + 1
+        self.clear_tracking()
+        self.process_frame(frame, run_pose=False, update_tracking=False)
+        self.status_text = f"Frame {self.frame_index}"
         return self.frame_response()
 
     def infer_current_frame(self) -> FrameResponse:
