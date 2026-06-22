@@ -227,6 +227,20 @@ function DesktopApp() {
     applyState(next);
   };
 
+  const setPoseOverlay = async (next: {
+    showPersonBoxes: boolean;
+    showSkeleton: boolean;
+    showLabels: boolean;
+    showTableBoxes: boolean;
+    showBallBoxes: boolean;
+  }) => {
+    const response = await api<FrameResponse>("/settings/pose-overlay", {
+      method: "POST",
+      body: JSON.stringify(next),
+    });
+    applyFrameResponse(response);
+  };
+
   const saveSettings = async () => {
     const poseState = await api<AppState>("/settings/model", {
       method: "POST",
@@ -272,6 +286,7 @@ function DesktopApp() {
           onSave={save}
           onClear={clear}
           onConfidenceChange={setConfidence}
+          onPoseOverlayChange={setPoseOverlay}
           onSeekFrame={seekFrame}
           onFrameClick={addTablePoint}
         />

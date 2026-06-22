@@ -19,6 +19,11 @@ export type AppState = {
   poseModelPath: string;
   ballModelPath: string;
   tableModelPath: string;
+  showPosePersonBoxes: boolean;
+  showPoseSkeleton: boolean;
+  showPoseLabels: boolean;
+  showTableBoxes: boolean;
+  showBallBoxes: boolean;
   action: string;
   detail: string;
   status: string;

@@ -10,6 +10,7 @@ from backend.backend import (
     FrameSeekRequest,
     FrameResponse,
     ModelPathRequest,
+    PoseOverlayRequest,
     SaveFrameRequest,
     SourceRequest,
     TablePointRequest,
@@ -89,6 +90,18 @@ def infer_current_frame() -> FrameResponse:
 def set_confidence(request: ConfidenceRequest) -> AppState:
     with backend.lock:
         return backend.set_confidence(request.confidence)
+
+
+@app.post("/settings/pose-overlay", response_model=FrameResponse, response_model_by_alias=True)
+def set_pose_overlay(request: PoseOverlayRequest) -> FrameResponse:
+    with backend.lock:
+        return backend.set_pose_overlay(
+            request.show_person_boxes,
+            request.show_skeleton,
+            request.show_labels,
+            request.show_table_boxes,
+            request.show_ball_boxes,
+        )
 
 
 @app.post("/settings/model", response_model=AppState, response_model_by_alias=True)

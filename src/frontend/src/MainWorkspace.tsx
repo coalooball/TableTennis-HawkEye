@@ -17,6 +17,13 @@ type MainWorkspaceProps = {
   onSave: () => void;
   onClear: () => void;
   onConfidenceChange: (value: number) => void;
+  onPoseOverlayChange: (next: {
+    showPersonBoxes: boolean;
+    showSkeleton: boolean;
+    showLabels: boolean;
+    showTableBoxes: boolean;
+    showBallBoxes: boolean;
+  }) => void;
   onSeekFrame: (frameIndex: number) => void;
   onFrameClick: (event: React.MouseEvent<HTMLImageElement>) => void;
 };
@@ -34,6 +41,7 @@ export function MainWorkspace({
   onSave,
   onClear,
   onConfidenceChange,
+  onPoseOverlayChange,
   onSeekFrame,
   onFrameClick,
 }: MainWorkspaceProps) {
@@ -59,6 +67,7 @@ export function MainWorkspace({
         onSave={onSave}
         onClear={onClear}
         onConfidenceChange={onConfidenceChange}
+        onPoseOverlayChange={onPoseOverlayChange}
       />
       <section className="viewerPanel">
         <div className={`viewer ${isCalibratingTable ? "isCalibrating" : ""}`}>

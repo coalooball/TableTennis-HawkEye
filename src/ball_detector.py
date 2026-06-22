@@ -28,7 +28,7 @@ class YoloBallDetector:
 
         boxes = result.boxes.xyxy.cpu().numpy()
         confs = result.boxes.conf.cpu().numpy() if result.boxes.conf is not None else np.ones(len(boxes))
-        candidates: list[tuple[float, tuple[int, int], float, float]] = []
+        candidates: list[tuple[float, tuple[int, int], float, float, tuple[int, int, int, int]]] = []
 
         for box, confidence in zip(boxes, confs):
             x1, y1, x2, y2 = box
@@ -36,11 +36,12 @@ class YoloBallDetector:
             height = max(float(y2 - y1), 1.0)
             center = (int(round((x1 + x2) / 2)), int(round((y1 + y2) / 2)))
             radius = max(width, height) / 2
+            detection_box = (int(round(x1)), int(round(y1)), int(round(x2)), int(round(y2)))
             score = float(confidence)
             if predicted is not None:
                 distance = np.hypot(center[0] - predicted[0], center[1] - predicted[1])
                 score -= min(distance / 320.0, 1.0) * 0.25
-            candidates.append((score, center, float(confidence), radius))
+            candidates.append((score, center, float(confidence), radius, detection_box))
 
-        score, center, confidence, radius = max(candidates, key=lambda item: item[0])
-        return BallDetection(center, confidence, score >= self.conf * 0.5, radius)
+        score, center, confidence, radius, detection_box = max(candidates, key=lambda item: item[0])
+        return BallDetection(center, confidence, score >= self.conf * 0.5, radius, detection_box)

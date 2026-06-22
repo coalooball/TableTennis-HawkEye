@@ -42,6 +42,11 @@ class AppState(ApiModel):
     pose_model_path: str
     ball_model_path: str
     table_model_path: str
+    show_pose_person_boxes: bool
+    show_pose_skeleton: bool
+    show_pose_labels: bool
+    show_table_boxes: bool
+    show_ball_boxes: bool
     action: str
     detail: str
     status: str
@@ -53,6 +58,14 @@ class SourceRequest(ApiModel):
 
 class ConfidenceRequest(ApiModel):
     confidence: float
+
+
+class PoseOverlayRequest(ApiModel):
+    show_person_boxes: bool
+    show_skeleton: bool
+    show_labels: bool
+    show_table_boxes: bool
+    show_ball_boxes: bool
 
 
 class ModelPathRequest(ApiModel):
@@ -104,6 +117,11 @@ class TableTennisBackend:
         self.model_path = DEFAULT_MODEL
         self.ball_model_path = DEFAULT_BALL_MODEL
         self.table_model_path = Path("models/table.pt")
+        self.show_pose_person_boxes = True
+        self.show_pose_skeleton = True
+        self.show_pose_labels = True
+        self.show_table_boxes = True
+        self.show_ball_boxes = True
         self.action_text = "Action: -"
         self.detail_text = f"Model: {self.model_path}"
         self.status_text = "Select a video or camera"
@@ -131,6 +149,11 @@ class TableTennisBackend:
             pose_model_path=str(self.model_path),
             ball_model_path=str(self.ball_model_path),
             table_model_path=str(self.table_model_path),
+            show_pose_person_boxes=self.show_pose_person_boxes,
+            show_pose_skeleton=self.show_pose_skeleton,
+            show_pose_labels=self.show_pose_labels,
+            show_table_boxes=self.show_table_boxes,
+            show_ball_boxes=self.show_ball_boxes,
             action=self.action_text,
             detail=self.detail_text,
             status=self.status_text,
@@ -268,6 +291,23 @@ class TableTennisBackend:
         if self.engine is not None:
             self.engine.conf = self.confidence
         return self.state()
+
+    def set_pose_overlay(
+        self,
+        show_person_boxes: bool,
+        show_skeleton: bool,
+        show_labels: bool,
+        show_table_boxes: bool,
+        show_ball_boxes: bool,
+    ) -> FrameResponse:
+        self.show_pose_person_boxes = show_person_boxes
+        self.show_pose_skeleton = show_skeleton
+        self.show_pose_labels = show_labels
+        self.show_table_boxes = show_table_boxes
+        self.show_ball_boxes = show_ball_boxes
+        if self.raw_frame is not None and self.ensure_engine():
+            self.process_frame(self.raw_frame, run_pose=True, update_tracking=False)
+        return self.frame_response()
 
     def set_model_path(self, path: str) -> AppState:
         model_path = Path(path).expanduser()
@@ -504,7 +544,12 @@ class TableTennisBackend:
         display = frame.copy()
         if run_pose:
             assert self.engine is not None
-            display, action = self.engine.infer_frame(display)
+            display, action = self.engine.infer_frame(
+                display,
+                show_person_boxes=self.show_pose_person_boxes,
+                show_skeleton=self.show_pose_skeleton,
+                show_pose_labels=self.show_pose_labels,
+            )
             self.action_text = f"Action: {action.label} ({action.confidence:.2f})"
             self.detail_text = f"{action.reason}\nModel: {self.engine.model_path.name}"
 
@@ -515,12 +560,12 @@ class TableTennisBackend:
             tracked_point = self.ball_tracker.update(detection)
             self.speed_estimator.update(frame_index, tracked_point, fps, self.table_calibrator)
 
-        self.ball_tracker.draw(display, show_trajectory=True)
+        self.ball_tracker.draw(display, show_trajectory=True, show_box=self.show_ball_boxes)
         self.speed_estimator.draw(display)
         self.landing_detector.update(list(self.ball_tracker.trajectory), self.table_calibrator)
         self.landing_detector.draw(display)
 
-        if self.table_calibrator.points:
+        if self.show_table_boxes and self.table_calibrator.points:
             self.table_calibrator.draw(display)
 
         return display

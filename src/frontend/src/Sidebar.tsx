@@ -1,4 +1,4 @@
-import { Button, Divider, Dropdown, Flex, Slider, Space, Typography } from "antd";
+import { Button, Checkbox, Divider, Dropdown, Flex, Slider, Space, Typography } from "antd";
 import { Play, Save, ScanSearch, Square, Target, Trash2 } from "lucide-react";
 
 import type { AppState, LanguageLabels } from "./types";
@@ -35,6 +35,13 @@ type SidebarProps = {
   onSave: () => void;
   onClear: () => void;
   onConfidenceChange: (value: number) => void;
+  onPoseOverlayChange: (next: {
+    showPersonBoxes: boolean;
+    showSkeleton: boolean;
+    showLabels: boolean;
+    showTableBoxes: boolean;
+    showBallBoxes: boolean;
+  }) => void;
 };
 
 export function Sidebar({
@@ -48,6 +55,7 @@ export function Sidebar({
   onSave,
   onClear,
   onConfidenceChange,
+  onPoseOverlayChange,
 }: SidebarProps) {
   const hasCapture = Boolean(state?.hasCapture);
   const hasFrame = Boolean(state?.hasFrame);
@@ -94,6 +102,80 @@ export function Sidebar({
           {labels.confidence}: {(confidence / 100).toFixed(2)}
         </Typography.Text>
         <Slider min={10} max={90} value={confidence} onChange={onConfidenceChange} />
+      </Flex>
+      <Divider />
+      <Flex vertical gap={8}>
+        <Typography.Text type="secondary">{labels.poseOverlays}</Typography.Text>
+        <Checkbox
+          checked={Boolean(state?.showPosePersonBoxes)}
+          onChange={(event) =>
+            onPoseOverlayChange({
+              showPersonBoxes: event.target.checked,
+              showSkeleton: Boolean(state?.showPoseSkeleton),
+              showLabels: Boolean(state?.showPoseLabels),
+              showTableBoxes: Boolean(state?.showTableBoxes),
+              showBallBoxes: Boolean(state?.showBallBoxes),
+            })
+          }
+        >
+          {labels.showPosePersonBoxes}
+        </Checkbox>
+        <Checkbox
+          checked={Boolean(state?.showPoseSkeleton)}
+          onChange={(event) =>
+            onPoseOverlayChange({
+              showPersonBoxes: Boolean(state?.showPosePersonBoxes),
+              showSkeleton: event.target.checked,
+              showLabels: Boolean(state?.showPoseLabels),
+              showTableBoxes: Boolean(state?.showTableBoxes),
+              showBallBoxes: Boolean(state?.showBallBoxes),
+            })
+          }
+        >
+          {labels.showPoseSkeleton}
+        </Checkbox>
+        <Checkbox
+          checked={Boolean(state?.showPoseLabels)}
+          onChange={(event) =>
+            onPoseOverlayChange({
+              showPersonBoxes: Boolean(state?.showPosePersonBoxes),
+              showSkeleton: Boolean(state?.showPoseSkeleton),
+              showLabels: event.target.checked,
+              showTableBoxes: Boolean(state?.showTableBoxes),
+              showBallBoxes: Boolean(state?.showBallBoxes),
+            })
+          }
+        >
+          {labels.showPoseLabels}
+        </Checkbox>
+        <Checkbox
+          checked={Boolean(state?.showTableBoxes)}
+          onChange={(event) =>
+            onPoseOverlayChange({
+              showPersonBoxes: Boolean(state?.showPosePersonBoxes),
+              showSkeleton: Boolean(state?.showPoseSkeleton),
+              showLabels: Boolean(state?.showPoseLabels),
+              showTableBoxes: event.target.checked,
+              showBallBoxes: Boolean(state?.showBallBoxes),
+            })
+          }
+        >
+          {labels.showTableBoxes}
+        </Checkbox>
+        <Checkbox
+          checked={Boolean(state?.showBallBoxes)}
+          onChange={(event) =>
+            onPoseOverlayChange({
+              showPersonBoxes: Boolean(state?.showPosePersonBoxes),
+              showSkeleton: Boolean(state?.showPoseSkeleton),
+              showLabels: Boolean(state?.showPoseLabels),
+              showTableBoxes: Boolean(state?.showTableBoxes),
+              showBallBoxes: event.target.checked,
+            })
+          }
+        >
+          {labels.showBallBoxes}
+        </Checkbox>
       </Flex>
       <Divider />
       <Flex vertical gap={4}>

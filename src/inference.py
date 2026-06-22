@@ -24,10 +24,16 @@ class PoseActionEngine:
     def reset(self) -> None:
         self.recognizers = {}
 
-    def infer_frame(self, frame: np.ndarray) -> tuple[np.ndarray, ActionResult]:
+    def infer_frame(
+        self,
+        frame: np.ndarray,
+        show_person_boxes: bool = True,
+        show_skeleton: bool = True,
+        show_pose_labels: bool = True,
+    ) -> tuple[np.ndarray, ActionResult]:
         results = self.model.predict(frame, conf=self.conf, verbose=False)
         result = results[0]
-        annotated = result.plot()
+        annotated = result.plot(boxes=show_person_boxes, labels=show_person_boxes, kpt_line=show_skeleton, kpt_radius=5 if show_skeleton else 0)
         people = person_keypoints_and_boxes(result)
         if not people:
             return annotated, SimpleActionRecognizer().update(None)
@@ -39,7 +45,8 @@ class PoseActionEngine:
         for index, (keypoints, box) in enumerate(people):
             recognizer = self.recognizers.setdefault(index, SimpleActionRecognizer())
             person_action = recognizer.update(keypoints)
-            draw_action_label(annotated, person_action, box)
+            if show_pose_labels:
+                draw_action_label(annotated, person_action, box)
             if index == primary_index:
                 action = person_action
         return annotated, action

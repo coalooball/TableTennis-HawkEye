@@ -16,6 +16,7 @@ export const languageLabels: {
     openSource: string;
     poseModel: string;
     poseModelPath: string;
+    poseOverlays: string;
     save: string;
     saveFrameDirectory: string;
     saveFrame: string;
@@ -33,6 +34,11 @@ export const languageLabels: {
     switchLanguage: string;
     switchToDark: string;
     switchToLight: string;
+    showPoseLabels: string;
+    showPosePersonBoxes: string;
+    showPoseSkeleton: string;
+    showTableBoxes: string;
+    showBallBoxes: string;
     video: string;
     videoDuration: string;
     videoFileSize: string;
@@ -60,6 +66,7 @@ export const languageLabels: {
     openSource: string;
     poseModel: string;
     poseModelPath: string;
+    poseOverlays: string;
     save: string;
     saveFrameDirectory: string;
     saveFrame: string;
@@ -77,6 +84,11 @@ export const languageLabels: {
     switchLanguage: string;
     switchToDark: string;
     switchToLight: string;
+    showPoseLabels: string;
+    showPosePersonBoxes: string;
+    showPoseSkeleton: string;
+    showTableBoxes: string;
+    showBallBoxes: string;
     video: string;
     videoDuration: string;
     videoFileSize: string;

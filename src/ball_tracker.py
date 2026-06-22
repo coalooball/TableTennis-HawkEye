@@ -13,6 +13,7 @@ class BallDetection:
     confidence: float
     accepted: bool
     radius: float = 0.0
+    box: tuple[int, int, int, int] | None = None
 
 
 class BallTracker:
@@ -53,12 +54,16 @@ class BallTracker:
         x2, y2 = self.trajectory[-1]
         return (x2 + (x2 - x1), y2 + (y2 - y1))
 
-    def draw(self, frame: np.ndarray, show_trajectory: bool = True) -> None:
+    def draw(self, frame: np.ndarray, show_trajectory: bool = True, show_box: bool = True) -> None:
         points = list(self.trajectory)
         if show_trajectory and len(points) >= 2:
             for index in range(1, len(points)):
                 thickness = 1 + index // 12
                 cv2.line(frame, points[index - 1], points[index], (40, 220, 255), thickness, cv2.LINE_AA)
+
+        if show_box and self.last_detection and self.last_detection.accepted and self.last_detection.box is not None:
+            x1, y1, x2, y2 = self.last_detection.box
+            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 80, 255), 2, cv2.LINE_AA)
 
         if points:
             cv2.circle(frame, points[-1], 7, (0, 80, 255), 2, cv2.LINE_AA)
